@@ -47,6 +47,7 @@ const Gym = () => {
     setSelectedSlot(event.target.value);
   };
   const handleLocChange = (event) => {
+    setSelectedSlot("Slots Time");
     setSelectedLocation(event.target.value);
   };
   const fetchGymSchedules = useCallback(
@@ -68,6 +69,30 @@ const Gym = () => {
     },
     []
   );
+
+  const [slotstime, setSlotsTime] = useState([]);
+  const [location, setLocation] = useState([]);
+
+  const fetchGymSlotsTimes = useCallback(async (Location, Date) => {
+    try {
+      const response = await fetch(
+        `https://sports1.gitam.edu/api/gym/getStarttimeByLoc/${Location}/${Date}`
+      );
+      const response2 = await fetch(
+        `https://sports1.gitam.edu/api/gym/getLocations/${Date}`
+      );
+      const data2 = await response2.json();
+      if (response2.ok) {
+        setLocation(data2);
+      }
+      const data = await response.json();
+      if (response.ok) {
+        setSlotsTime(["Slots Time", ...data]);
+      }
+    } catch (error) {
+      console.log("Something went wrong", error);
+    }
+  }, []);
   const UpdateAttendance = async (dataToPost) => {
     setScannedResult(true);
     setTimeout(() => {
@@ -121,6 +146,7 @@ const Gym = () => {
   useEffect(() => {
     const currentDate = new Date().toISOString().split("T")[0];
     fetchGymSchedules(selectedLocation, currentDate, selectedSlot);
+    fetchGymSlotsTimes(selectedLocation, currentDate);
   }, [selectedSlot, selectedLocation, fetchGymSchedules]);
 
   // AutoFocus input field data getting
@@ -271,21 +297,21 @@ const Gym = () => {
                   onChange={handleLocChange}
                   displayEmpty
                   style={{
-                    width: "8rem",
+                    width: "9rem",
                     height: "2.5rem",
                     backgroundColor: "#00695c",
                     color: "white",
                   }}
                 >
                   {}
-                  {["GYM", "Block-C", "Campus", "Girls Hostel"].map((loc) => (
+                  {location?.map((loc) => (
                     <MenuItem
                       key={loc}
                       value={loc}
                       style={{
                         height: "1.5rem",
                         justifyContent: "left",
-                        width: "8rem",
+                        width: "9rem",
                       }}
                     >
                       {loc}
@@ -299,39 +325,20 @@ const Gym = () => {
                   onChange={handleSlotChange}
                   displayEmpty
                   style={{
-                    width: "8rem",
+                    width: "9rem",
                     height: "2.5rem",
                     backgroundColor: "#00695c",
                     color: "white",
                   }}
                 >
-                  {[
-                    "Slots Time",
-                    "5:00 AM",
-                    "6:00 AM",
-                    "7:00 AM",
-                    "8:00 AM",
-                    "9:00 AM",
-                    "10:00 AM",
-                    "11:00 AM",
-                    "12:00 PM",
-                    "1:00 PM",
-                    "2:00 PM",
-                    "3:00 PM",
-                    "4:00 PM",
-                    "5:00 PM",
-                    "6:00 PM",
-                    "7:00 PM",
-                    "8:00 PM",
-                    "9:00 PM",
-                  ].map((time) => (
+                  {slotstime?.map((time, index) => (
                     <MenuItem
-                      key={time}
+                      key={index}
                       value={time}
                       style={{
                         height: "1.5rem",
                         justifyContent: "left",
-                        width: "8rem",
+                        width: "9rem",
                       }}
                     >
                       {time}
@@ -356,6 +363,7 @@ const Gym = () => {
                   height: "6rem",
                   width: "15rem",
                   border: "1px solid #B20016",
+                  cursor: "pointer",
                 }}
                 onClick={() => {
                   setExpand((prev) => ({ ...prev, waiting: !prev.waiting }));
@@ -383,6 +391,7 @@ const Gym = () => {
                   height: "6rem",
                   width: "15rem",
                   border: "1px solid #B20016",
+                  cursor: "pointer",
                 }}
                 onClick={() => {
                   setExpand((prev) => ({ ...prev, arrived: !prev.arrived }));
