@@ -14,6 +14,7 @@ import {
   TableRow,
   TableContainer,
   Paper,
+  TablePagination,
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import Grid from "@mui/material/Grid2";
@@ -22,6 +23,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 const Gym = () => {
+  const KEY = process.env.REACT_APP_NOT_SECRET_CODE;
   const [selectedSlot, setSelectedSlot] = useState("Slots Time");
   const [selectedLocation, setSelectedLocation] = useState("GYM");
   const [access, setAccess] = useState(false);
@@ -31,17 +33,42 @@ const Gym = () => {
   const [present, setPresent] = useState([]);
   const [arrived, setArrived] = useState(0);
   const [qrdata, setQrData] = useState("");
+  console.log("qrdata: ", qrdata);
   const [scannedResult, setScannedResult] = useState(false);
   const [loading, setLoading] = useState(false);
   const [expand, setExpand] = useState({
     waiting: true,
     arrived: false,
   });
-
+  const [waitingPage, setWaitingPage] = useState(0);
+  const [waitingRowsPerPage, setWaitingRowsPerPage] = useState(10);
+  const [arrivedPage, setArrivedPage] = useState(0);
+  const [arrivedRowsPerPage, setArrivedRowsPerPage] = useState(10);
+  const handleWaitingPageChange = (event, newPage) => {
+    setWaitingPage(newPage);
+  };
+  const handleWaitingRowsPerPageChange = (event) => {
+    setWaitingRowsPerPage(parseInt(event.target.value, 10));
+    setWaitingPage(0);
+  };
+  const handleArrivedPageChange = (event, newPage) => {
+    setArrivedPage(newPage);
+  };
+  const handleArrivedRowsPerPageChange = (event) => {
+    setArrivedRowsPerPage(parseInt(event.target.value, 10));
+    setArrivedPage(0);
+  };
+  const paginatedWaitingData = waitlist.slice(
+    waitingPage * waitingRowsPerPage,
+    waitingPage * waitingRowsPerPage + waitingRowsPerPage
+  );
+  const paginatedArrivedData = present.slice(
+    arrivedPage * arrivedRowsPerPage,
+    arrivedPage * arrivedRowsPerPage + arrivedRowsPerPage
+  );
   const handleAccordionChange = (panel) => {
     setExpand((prev) => ({ ...prev, [panel]: !prev[panel] }));
   };
-
   const inputRef = useRef(null);
   const handleSlotChange = (event) => {
     setSelectedSlot(event.target.value);
@@ -54,14 +81,20 @@ const Gym = () => {
     async (Location, Date, selectedSlot) => {
       try {
         const response = await fetch(
-          `https://sports1.gitam.edu/slot/gym/getAdminslotsCountByTimeAndDate/${Location}/${selectedSlot}/${Date}`
+          `https://sports1.gitam.edu/slot/gym/getAdminslotsCountByTimeAndDate/${Location}/${selectedSlot}/${Date}`,
+          {
+            headers: {
+              Authorization: `Bearer ${KEY}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data = await response.json();
         if (response.ok) {
           setWait(data.waiting.totalSlots);
-          setWaitList(data.waiting.result4);
-          setArrived(data.arrived);
-          setPresent(data.present);
+          setWaitList(data.waiting.totalWaiting);
+          setArrived(data.arrived.presentCount);
+          setPresent(data.arrived.totalPresent);
         }
       } catch (error) {
         console.log("Something went wrong", error);
@@ -69,17 +102,27 @@ const Gym = () => {
     },
     []
   );
-
   const [slotstime, setSlotsTime] = useState([]);
   const [location, setLocation] = useState([]);
-
   const fetchGymSlotsTimes = useCallback(async (Location, Date) => {
     try {
       const response = await fetch(
-        `https://sports1.gitam.edu/api/gym/getStarttimeByLoc/${Location}/${Date}`
+        `https://sports1.gitam.edu/api/gym/getStarttimeByLoc/${Location}/${Date}`,
+        {
+          headers: {
+            Authorization: `Bearer ${KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       const response2 = await fetch(
-        `https://sports1.gitam.edu/api/gym/getLocations/${Date}`
+        `https://sports1.gitam.edu/api/gym/getLocations/${Date}`,
+        {
+          headers: {
+            Authorization: `Bearer ${KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
       const data2 = await response2.json();
       if (response2.ok) {
@@ -97,7 +140,7 @@ const Gym = () => {
     setScannedResult(true);
     setTimeout(() => {
       setScannedResult(false);
-    }, 3000);
+    }, 2000);
     try {
       const response = await fetch(
         "https://sports1.gitam.edu/api/gym/updateGymSchedule",
@@ -148,26 +191,36 @@ const Gym = () => {
     fetchGymSchedules(selectedLocation, currentDate, selectedSlot);
     fetchGymSlotsTimes(selectedLocation, currentDate);
   }, [selectedSlot, selectedLocation, fetchGymSchedules]);
-
-  // AutoFocus input field data getting
-
   const delayTimeoutRef = useRef(null);
-  useEffect(() => {
-    const handleFocus = () => {
-      inputRef.current.focus();
-    };
-    document.addEventListener("click", handleFocus);
-    return () => {
-      document.removeEventListener("click", handleFocus);
-    };
-  }, []);
 
-  // Getting data from Qr scanner using autofocus input field
+  // Autofocus code
+  const [isFocused, setIsFocused] = useState(true);
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (inputRef.current && !inputRef.current.contains(e.target)) {
+        inputRef.current.blur();
+        setIsFocused(false);
+      }
+    };
+    const autoRefocus = () => {
+      if (!isFocused) {
+        setTimeout(() => {
+          inputRef.current.focus();
+          setIsFocused(true);
+        }, 1500);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    const refocusInterval = setInterval(autoRefocus, 1500);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      clearInterval(refocusInterval);
+    };
+  }, [isFocused]);
   const handleFocusedValue = (e) => {
     setLoading(true);
     const newQrData = e.target.value;
     setQrData(newQrData);
-
     if (delayTimeoutRef.current) {
       clearTimeout(delayTimeoutRef.current);
     }
@@ -178,7 +231,7 @@ const Gym = () => {
       } catch (error) {
         setLoading(false);
       }
-    }, 5000);
+    }, 1000);
   };
   return (
     <>
@@ -208,22 +261,6 @@ const Gym = () => {
             size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
           >
             <>
-              <input
-                id="barcode"
-                type="text"
-                ref={inputRef}
-                value={qrdata}
-                autoFocus
-                placeholder="Scanned Data"
-                onBlur={() => inputRef.current.focus()}
-                onChange={handleFocusedValue}
-                style={{
-                  width: "10%",
-                  padding: "5px",
-                  fontSize: "10px",
-                  opacity: "0",
-                }}
-              />
               {loading && (
                 <Grid
                   container
@@ -412,8 +449,34 @@ const Gym = () => {
                 </CardContent>
               </Card>
             </Grid>
-          </Grid>
+            <Grid
+              item
+              container
+              display={"flex"}
+              justifyContent={"center"}
+              alignItems={"center"}
+            >
+              <input
+                id="barcode"
+                type="text"
+                ref={inputRef}
+                value={qrdata}
+                autoFocus
+                placeholder="Scanned Data"
+                onBlur={() => setIsFocused(false)}
+                onFocus={() => setIsFocused(true)}
+                onChange={handleFocusedValue}
+                style={{
+                  width: "100%",
+                  height: "1rem",
+                  padding: "5px",
+                  fontSize: "10px",
 
+                  opacity: "0",
+                }}
+              />
+            </Grid>
+          </Grid>
           <Accordion
             expanded={expand.waiting}
             onChange={() => handleAccordionChange("waiting")}
@@ -460,10 +523,12 @@ const Gym = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {waitlist?.length > 0 ? (
-                      waitlist.map((item, id) => (
+                    {paginatedWaitingData.length > 0 ? (
+                      paginatedWaitingData.map((item, id) => (
                         <TableRow key={id}>
-                          <TableCell>{id + 1}</TableCell>
+                          <TableCell>
+                            {id + 1 + waitingPage * waitingRowsPerPage}
+                          </TableCell>
                           <TableCell>{item?.regdNo || "N/A"}</TableCell>
                           <TableCell>
                             {item?.start_date
@@ -490,10 +555,18 @@ const Gym = () => {
                     )}
                   </TableBody>
                 </Table>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 15, 20]}
+                  component="div"
+                  count={waitlist.length}
+                  rowsPerPage={waitingRowsPerPage}
+                  page={waitingPage}
+                  onPageChange={handleWaitingPageChange}
+                  onRowsPerPageChange={handleWaitingRowsPerPageChange}
+                />
               </TableContainer>
             </AccordionDetails>
           </Accordion>
-
           <Accordion
             expanded={expand.arrived}
             onChange={() => handleAccordionChange("arrived")}
@@ -540,10 +613,12 @@ const Gym = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {present?.length > 0 ? (
-                      present.map((item, id) => (
+                    {paginatedArrivedData.length > 0 ? (
+                      paginatedArrivedData.map((item, id) => (
                         <TableRow key={id}>
-                          <TableCell>{id + 1}</TableCell>
+                          <TableCell>
+                            {id + 1 + arrivedPage * arrivedRowsPerPage}
+                          </TableCell>
                           <TableCell>{item?.regdNo || "N/A"}</TableCell>
                           <TableCell>
                             {item?.start_date
@@ -570,6 +645,15 @@ const Gym = () => {
                     )}
                   </TableBody>
                 </Table>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 15, 20]}
+                  component="div"
+                  count={present.length}
+                  rowsPerPage={arrivedRowsPerPage}
+                  page={arrivedPage}
+                  onPageChange={handleArrivedPageChange}
+                  onRowsPerPageChange={handleArrivedRowsPerPageChange}
+                />
               </TableContainer>
             </AccordionDetails>
           </Accordion>
