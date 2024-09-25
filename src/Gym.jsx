@@ -22,6 +22,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
+import CryptoJS from "crypto-js";
 const Gym = () => {
   const KEY = process.env.REACT_APP_NOT_SECRET_CODE;
   const [selectedSlot, setSelectedSlot] = useState("Slots Time");
@@ -33,13 +34,41 @@ const Gym = () => {
   const [present, setPresent] = useState([]);
   const [arrived, setArrived] = useState(0);
   const [qrdata, setQrData] = useState("");
-  console.log("qrdata: ", qrdata);
   const [scannedResult, setScannedResult] = useState(false);
   const [loading, setLoading] = useState(false);
   const [expand, setExpand] = useState({
     waiting: true,
     arrived: false,
   });
+
+  const [Regdno, setRegdNo] = useState(null);
+  console.log("eweee: ", Regdno);
+
+  const decryptTripleDES = (cipherText, key, useHashing = false) => {
+    let keyHex;
+
+    if (useHashing) {
+      keyHex = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(key));
+    } else {
+      keyHex = CryptoJS.enc.Utf8.parse(key);
+    }
+
+    const decrypted = CryptoJS.TripleDES.decrypt(
+      {
+        ciphertext: CryptoJS.enc.Base64.parse(cipherText.replace(" ", "+")),
+      },
+      keyHex,
+      {
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.Pkcs7,
+      }
+    );
+
+    const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
+    setRegdNo(decryptedText);
+    return decryptedText;
+  };
+
   const [waitingPage, setWaitingPage] = useState(0);
   const [waitingRowsPerPage, setWaitingRowsPerPage] = useState(10);
   const [arrivedPage, setArrivedPage] = useState(0);
@@ -102,6 +131,7 @@ const Gym = () => {
     },
     []
   );
+
   const [slotstime, setSlotsTime] = useState([]);
   const [location, setLocation] = useState([]);
   const fetchGymSlotsTimes = useCallback(async (Location, Date) => {
@@ -155,6 +185,7 @@ const Gym = () => {
             start_date: dataToPost.start_date,
             id: dataToPost.id,
             masterID: dataToPost.masterID,
+            admin_id: Regdno,
           }),
         }
       );
@@ -186,7 +217,17 @@ const Gym = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    const id = params.get("id");
+
+    if (id) {
+      const decryptedId = decryptTripleDES(id, "Mallikarjun", true);
+      console.log("Decrypted id: ", decryptedId);
+    }
+
     const currentDate = new Date().toISOString().split("T")[0];
     fetchGymSchedules(selectedLocation, currentDate, selectedSlot);
     fetchGymSlotsTimes(selectedLocation, currentDate);
@@ -194,7 +235,7 @@ const Gym = () => {
   const delayTimeoutRef = useRef(null);
 
   // Autofocus code
-  const [isFocused, setIsFocused] = useState(true);
+  const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (inputRef.current && !inputRef.current.contains(e.target)) {
@@ -471,7 +512,6 @@ const Gym = () => {
                   height: "1rem",
                   padding: "5px",
                   fontSize: "10px",
-
                   opacity: "0",
                 }}
               />
