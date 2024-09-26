@@ -24,7 +24,6 @@ import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import CryptoJS from "crypto-js";
 const Gym = () => {
-  const KEY = process.env.REACT_APP_NOT_SECRET_CODE;
   const [selectedSlot, setSelectedSlot] = useState("Slots Time");
   const [selectedLocation, setSelectedLocation] = useState("GYM");
   const [access, setAccess] = useState(false);
@@ -42,7 +41,6 @@ const Gym = () => {
   });
 
   const [Regdno, setRegdNo] = useState(null);
-  console.log("eweee: ", Regdno);
 
   const decryptTripleDES = (cipherText, key, useHashing = false) => {
     let keyHex;
@@ -113,7 +111,6 @@ const Gym = () => {
           `https://sports1.gitam.edu/slot/gym/getAdminslotsCountByTimeAndDate/${Location}/${selectedSlot}/${Date}`,
           {
             headers: {
-              Authorization: `Bearer ${KEY}`,
               "Content-Type": "application/json",
             },
           }
@@ -140,7 +137,6 @@ const Gym = () => {
         `https://sports1.gitam.edu/api/gym/getStarttimeByLoc/${Location}/${Date}`,
         {
           headers: {
-            Authorization: `Bearer ${KEY}`,
             "Content-Type": "application/json",
           },
         }
@@ -149,7 +145,6 @@ const Gym = () => {
         `https://sports1.gitam.edu/api/gym/getLocations/${Date}`,
         {
           headers: {
-            Authorization: `Bearer ${KEY}`,
             "Content-Type": "application/json",
           },
         }
@@ -225,13 +220,12 @@ const Gym = () => {
 
     if (id) {
       const decryptedId = decryptTripleDES(id, "Mallikarjun", true);
-      console.log("Decrypted id: ", decryptedId);
     }
 
     const currentDate = new Date().toISOString().split("T")[0];
     fetchGymSchedules(selectedLocation, currentDate, selectedSlot);
     fetchGymSlotsTimes(selectedLocation, currentDate);
-  }, [selectedSlot, selectedLocation, fetchGymSchedules]);
+  }, [selectedSlot, selectedLocation, fetchGymSchedules, fetchGymSlotsTimes]);
   const delayTimeoutRef = useRef(null);
 
   // Autofocus code
