@@ -17,12 +17,13 @@ import {
   TablePagination,
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
-import Grid from "@mui/material/Grid2";
+import Grid2 from "@mui/material/Grid2";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import CryptoJS from "crypto-js";
+
 const Gym = () => {
   const [selectedSlot, setSelectedSlot] = useState("Slots Time");
   const [selectedLocation, setSelectedLocation] = useState("GYM");
@@ -39,18 +40,14 @@ const Gym = () => {
     waiting: true,
     arrived: false,
   });
-
   const [Regdno, setRegdNo] = useState(null);
-
   const decryptTripleDES = (cipherText, key, useHashing = false) => {
     let keyHex;
-
     if (useHashing) {
       keyHex = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(key));
     } else {
       keyHex = CryptoJS.enc.Utf8.parse(key);
     }
-
     const decrypted = CryptoJS.TripleDES.decrypt(
       {
         ciphertext: CryptoJS.enc.Base64.parse(cipherText.replace(" ", "+")),
@@ -61,12 +58,10 @@ const Gym = () => {
         padding: CryptoJS.pad.Pkcs7,
       }
     );
-
     const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
     setRegdNo(decryptedText);
     return decryptedText;
   };
-
   const [waitingPage, setWaitingPage] = useState(0);
   const [waitingRowsPerPage, setWaitingRowsPerPage] = useState(10);
   const [arrivedPage, setArrivedPage] = useState(0);
@@ -93,6 +88,7 @@ const Gym = () => {
     arrivedPage * arrivedRowsPerPage,
     arrivedPage * arrivedRowsPerPage + arrivedRowsPerPage
   );
+
   const handleAccordionChange = (panel) => {
     setExpand((prev) => ({ ...prev, [panel]: !prev[panel] }));
   };
@@ -128,9 +124,9 @@ const Gym = () => {
     },
     []
   );
-
   const [slotstime, setSlotsTime] = useState([]);
   const [location, setLocation] = useState([]);
+
   const fetchGymSlotsTimes = useCallback(async (Location, Date) => {
     try {
       const response = await fetch(
@@ -212,23 +208,17 @@ const Gym = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-
     const id = params.get("id");
-
     if (id) {
       const decryptedId = decryptTripleDES(id, "Mallikarjun", true);
     }
-
     const currentDate = new Date().toISOString().split("T")[0];
     fetchGymSchedules(selectedLocation, currentDate, selectedSlot);
     fetchGymSlotsTimes(selectedLocation, currentDate);
   }, [selectedSlot, selectedLocation, fetchGymSchedules, fetchGymSlotsTimes]);
   const delayTimeoutRef = useRef(null);
-
-  // Autofocus code
   const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -270,14 +260,12 @@ const Gym = () => {
   };
   return (
     <>
-      <Grid container spacing={4} justifyContent="center" alignItems="center">
-        <Grid
-          spacing={4}
-          item
-          size={{ xs: 12, md: 12 }}
-          style={{ margin: "2rem" }}
+      <Grid2 container spacing={2} justifyContent="center" alignItems="center">
+        <Grid2
+          spacing={2}
+          size={{ xs: 12, md: 6, sm: 6, lg: 12 }}
+          style={{ margin: "2rem", overflow: "hidden" }}
         >
-          {}
           <Typography
             variant="h4"
             textAlign="center"
@@ -289,28 +277,39 @@ const Gym = () => {
           >
             GITAM GYM
           </Typography>
-          <Grid
-            item
+          {/* <Typography
+            variant="h4"
+            textAlign="center"
+            style={{
+              fontWeight: "bold",
+              color: "#B20016",
+              marginBottom: "1rem",
+            }}
+          >
+            <RoomIcon style={{ height: "2rem", width: "2rem" }} />{" "}
+            {selectedLocation}
+          </Typography> */}
+          <Grid2
             container
             justifyContent="center"
-            size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+            size={{ xs: 12, sm: 12, md: 12, lg: 12 }}
           >
             <>
               {loading && (
-                <Grid
+                <Grid2
                   container
                   display={"flex"}
                   size={{ xs: 12 }}
                   justifyContent={"center"}
                 >
                   <CircularProgress size={30} />
-                </Grid>
+                </Grid2>
               )}
             </>
-          </Grid>
+          </Grid2>
           {scannedResult && (
-            <Grid container justifyContent="center" gap={4} spacing={2}>
-              <Grid item size={{ xs: 12 }}>
+            <Grid2 container justifyContent="center" gap={4} spacing={2}>
+              <Grid2 size={{ xs: 12 }}>
                 <Card
                   style={{
                     height: "80%",
@@ -318,8 +317,8 @@ const Gym = () => {
                     backgroundColor: "#f5f5f5",
                   }}
                 >
-                  <Grid container>
-                    <Grid item size={{ xs: 12 }}>
+                  <Grid2 container>
+                    <Grid2 size={{ xs: 12 }}>
                       <Typography
                         variant="h6"
                         style={access ? styles.successText : styles.errorText}
@@ -332,38 +331,37 @@ const Gym = () => {
                       >
                         {accessmsg[1]?.message || "Access Message"}
                       </Typography>
-                    </Grid>
-                  </Grid>
+                    </Grid2>
+                  </Grid2>
                 </Card>
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
           )}
-          <Grid
+          <Grid2
             container
             justifyContent="space-between"
             alignItems="center"
+            size={{ xs: 12, sm: 6, md: 6 }}
             style={{
               borderBottom: "2px solid #B20016",
               paddingBottom: "0.5rem",
             }}
           >
-            <Grid item>
+            <Grid2>
               <Typography
                 variant="h5"
                 style={{ color: "#B20016", fontWeight: "bold" }}
               >
                 {selectedLocation} - {selectedSlot}
               </Typography>
-            </Grid>
-            <Grid
-              item
-              xs={6}
+            </Grid2>
+            <Grid2
+              size={{ xs: 12, sm: 12, md: 12 }}
               container
-              justifyContent="flex-end"
               spacing={2}
               alignItems="center"
             >
-              <Grid item>
+              <Grid2>
                 <Select
                   value={selectedLocation}
                   onChange={handleLocChange}
@@ -375,7 +373,6 @@ const Gym = () => {
                     color: "white",
                   }}
                 >
-                  {}
                   {location?.map((loc) => (
                     <MenuItem
                       key={loc}
@@ -390,8 +387,8 @@ const Gym = () => {
                     </MenuItem>
                   ))}
                 </Select>
-              </Grid>
-              <Grid item>
+              </Grid2>
+              <Grid2>
                 <Select
                   value={selectedSlot}
                   onChange={handleSlotChange}
@@ -417,23 +414,24 @@ const Gym = () => {
                     </MenuItem>
                   ))}
                 </Select>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid
+              </Grid2>
+            </Grid2>
+          </Grid2>
+          <Grid2
             container
-            spacing={4}
+            spacing={2}
             style={{
-              marginTop: "0rem",
+              marginBottom: "5px",
               padding: "2rem",
               backgroundColor: "#fff",
             }}
           >
-            <Grid item>
+            {}
+            <Grid2 item size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <Card
                 style={{
-                  height: "6rem",
-                  width: "15rem",
+                  height: "auto",
+                  width: "100%",
                   border: "1px solid #B20016",
                   cursor: "pointer",
                 }}
@@ -442,26 +440,30 @@ const Gym = () => {
                 }}
               >
                 <CardContent>
-                  <div
+                  <Grid2
                     style={{ display: "flex", justifyContent: "space-between" }}
                   >
-                    <div>
+                    <Grid2>
                       <Typography variant="h6">{wait}</Typography>
                       <Typography variant="body1">Waiting</Typography>
-                    </div>
+                    </Grid2>
                     <DirectionsRunIcon
-                      style={{ fontSize: "3rem", color: "#00695c" }}
+                      style={{
+                        fontSize: "3rem",
+                        color: "#00695c",
+                        marginLeft: "3rem",
+                      }}
                     />
-                  </div>
+                  </Grid2>
                 </CardContent>
               </Card>
-            </Grid>
+            </Grid2>
             {}
-            <Grid item>
+            <Grid2 item size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <Card
                 style={{
-                  height: "6rem",
-                  width: "15rem",
+                  height: "auto",
+                  width: "100%",
                   border: "1px solid #B20016",
                   cursor: "pointer",
                 }}
@@ -470,23 +472,28 @@ const Gym = () => {
                 }}
               >
                 <CardContent>
-                  <div
+                  <Grid2
                     style={{ display: "flex", justifyContent: "space-between" }}
                   >
-                    <div>
+                    <Grid2>
                       <Typography variant="h6">{arrived}</Typography>
                       <Typography variant="body1">Arrived</Typography>
-                    </div>
+                    </Grid2>
                     <FitnessCenterIcon
-                      style={{ fontSize: "3rem", color: "#00695c" }}
+                      style={{
+                        fontSize: "3rem",
+                        color: "#00695c",
+                        marginLeft: "3rem",
+                      }}
                     />
-                  </div>
+                  </Grid2>
                 </CardContent>
               </Card>
-            </Grid>
-            <Grid
+            </Grid2>
+            {}
+            <Grid2
               item
-              container
+              size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
               display={"flex"}
               justifyContent={"center"}
               alignItems={"center"}
@@ -509,190 +516,196 @@ const Gym = () => {
                   opacity: "0",
                 }}
               />
-            </Grid>
-          </Grid>
-          <Accordion
-            expanded={expand.waiting}
-            onChange={() => handleAccordionChange("waiting")}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id="panel1a-header"
+            </Grid2>
+          </Grid2>
+          <Grid2 spacing={2} size={{ xs: 12 }} style={{ marginBottom: "5px" }}>
+            <Accordion
+              expanded={expand.waiting}
+              onChange={() => handleAccordionChange("waiting")}
             >
-              <Typography style={{ color: "#B20016" }}>Waiting</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <TableContainer
-                component={Paper}
-                style={{
-                  border: "1px solid #B20016",
-                  marginTop: "0.5rem",
-                  backgroundColor: "#fff",
-                }}
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
               >
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      {[
-                        "Sno",
-                        "Regd Number",
-                        "Start Date",
-                        "Start Time",
-                        "End Time",
-                        "Location",
-                        "Attendance",
-                      ].map((heading) => (
-                        <TableCell
-                          key={heading}
-                          style={{
-                            borderBottom: "1px solid #B20016",
-                            fontWeight: "bold",
-                            color: "#B20016",
-                          }}
-                        >
-                          {heading}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {paginatedWaitingData.length > 0 ? (
-                      paginatedWaitingData.map((item, id) => (
-                        <TableRow key={id}>
-                          <TableCell>
-                            {id + 1 + waitingPage * waitingRowsPerPage}
-                          </TableCell>
-                          <TableCell>{item?.regdNo || "N/A"}</TableCell>
-                          <TableCell>
-                            {item?.start_date
-                              ? new Date(item.start_date)
-                                  .toISOString()
-                                  .split("T")[0]
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell>{item?.start_time || "N/A"}</TableCell>
-                          <TableCell>{item?.end_time || "N/A"}</TableCell>
-                          <TableCell>{item?.Location || "N/A"}</TableCell>
-                          <TableCell>{item?.attendance || "N/A"}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
+                <Typography style={{ color: "#B20016" }}>Waiting</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <TableContainer
+                  component={Paper}
+                  style={{
+                    border: "1px solid #B20016",
+                    marginTop: "0.5rem",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <Table>
+                    <TableHead>
                       <TableRow>
-                        <TableCell
-                          colSpan={7}
-                          style={{ textAlign: "center", padding: "1rem" }}
-                        >
-                          No data available
-                        </TableCell>
+                        {[
+                          "Sno",
+                          "Regd Number",
+                          "Start Date",
+                          "Start Time",
+                          "End Time",
+                          "Location",
+                          "Attendance",
+                        ].map((heading) => (
+                          <TableCell
+                            key={heading}
+                            style={{
+                              borderBottom: "1px solid #B20016",
+                              fontWeight: "bold",
+                              color: "#B20016",
+                            }}
+                          >
+                            {heading}
+                          </TableCell>
+                        ))}
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 15, 20]}
-                  component="div"
-                  count={waitlist.length}
-                  rowsPerPage={waitingRowsPerPage}
-                  page={waitingPage}
-                  onPageChange={handleWaitingPageChange}
-                  onRowsPerPageChange={handleWaitingRowsPerPageChange}
-                />
-              </TableContainer>
-            </AccordionDetails>
-          </Accordion>
-          <Accordion
-            expanded={expand.arrived}
-            onChange={() => handleAccordionChange("arrived")}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel2a-content"
-              id="panel2a-header"
+                    </TableHead>
+                    <TableBody>
+                      {paginatedWaitingData.length > 0 ? (
+                        paginatedWaitingData.map((item, id) => (
+                          <TableRow key={id}>
+                            <TableCell>
+                              {id + 1 + waitingPage * waitingRowsPerPage}
+                            </TableCell>
+                            <TableCell>{item?.regdNo || "N/A"}</TableCell>
+                            <TableCell>
+                              {item?.start_date
+                                ? new Date(item.start_date)
+                                    .toISOString()
+                                    .split("T")[0]
+                                : "N/A"}
+                            </TableCell>
+                            <TableCell>{item?.start_time || "N/A"}</TableCell>
+                            <TableCell>{item?.end_time || "N/A"}</TableCell>
+                            <TableCell>{item?.Location || "N/A"}</TableCell>
+                            <TableCell>{item?.attendance || "N/A"}</TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={7}
+                            style={{ textAlign: "center", padding: "1rem" }}
+                          >
+                            No data available
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 15, 20]}
+                    component="div"
+                    count={waitlist.length}
+                    rowsPerPage={waitingRowsPerPage}
+                    page={waitingPage}
+                    onPageChange={handleWaitingPageChange}
+                    onRowsPerPageChange={handleWaitingRowsPerPageChange}
+                  />
+                </TableContainer>
+              </AccordionDetails>
+            </Accordion>
+          </Grid2>
+          <Grid2 size={{ xs: 12 }}>
+            <Accordion
+              expanded={expand.arrived}
+              onChange={() => handleAccordionChange("arrived")}
             >
-              <Typography style={{ color: "#B20016" }}>Arrived</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <TableContainer
-                component={Paper}
-                style={{
-                  border: "1px solid #B20016",
-                  marginTop: "0.5rem",
-                  backgroundColor: "#fff",
-                }}
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel2a-content"
+                id="panel2a-header"
               >
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      {[
-                        "Sno",
-                        "Regd Number",
-                        "Start Date",
-                        "Start Time",
-                        "End Time",
-                        "Location",
-                        "Attendance",
-                      ].map((heading) => (
-                        <TableCell
-                          key={heading}
-                          style={{
-                            borderBottom: "1px solid #B20016",
-                            fontWeight: "bold",
-                            color: "#B20016",
-                          }}
-                        >
-                          {heading}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {paginatedArrivedData.length > 0 ? (
-                      paginatedArrivedData.map((item, id) => (
-                        <TableRow key={id}>
-                          <TableCell>
-                            {id + 1 + arrivedPage * arrivedRowsPerPage}
-                          </TableCell>
-                          <TableCell>{item?.regdNo || "N/A"}</TableCell>
-                          <TableCell>
-                            {item?.start_date
-                              ? new Date(item.start_date)
-                                  .toISOString()
-                                  .split("T")[0]
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell>{item?.start_time || "N/A"}</TableCell>
-                          <TableCell>{item?.end_time || "N/A"}</TableCell>
-                          <TableCell>{item?.Location || "N/A"}</TableCell>
-                          <TableCell>{item?.attendance || "N/A"}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
+                <Typography style={{ color: "#B20016" }}>Arrived</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <TableContainer
+                  component={Paper}
+                  style={{
+                    border: "1px solid #B20016",
+                    marginTop: "0.5rem",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <Table>
+                    <TableHead>
                       <TableRow>
-                        <TableCell
-                          colSpan={7}
-                          style={{ textAlign: "center", padding: "1rem" }}
-                        >
-                          No data available
-                        </TableCell>
+                        {[
+                          "Sno",
+                          "Regd Number",
+                          "Start Date",
+                          "Start Time",
+                          "End Time",
+                          "Location",
+                          "Attendance",
+                          "Admin ID",
+                        ].map((heading) => (
+                          <TableCell
+                            key={heading}
+                            style={{
+                              borderBottom: "1px solid #B20016",
+                              fontWeight: "bold",
+                              color: "#B20016",
+                            }}
+                          >
+                            {heading}
+                          </TableCell>
+                        ))}
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 15, 20]}
-                  component="div"
-                  count={present.length}
-                  rowsPerPage={arrivedRowsPerPage}
-                  page={arrivedPage}
-                  onPageChange={handleArrivedPageChange}
-                  onRowsPerPageChange={handleArrivedRowsPerPageChange}
-                />
-              </TableContainer>
-            </AccordionDetails>
-          </Accordion>
-        </Grid>
-      </Grid>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedArrivedData.length > 0 ? (
+                        paginatedArrivedData.map((item, id) => (
+                          <TableRow key={id}>
+                            <TableCell>
+                              {id + 1 + arrivedPage * arrivedRowsPerPage}
+                            </TableCell>
+                            <TableCell>{item?.regdNo || "N/A"}</TableCell>
+                            <TableCell>
+                              {item?.start_date
+                                ? new Date(item.start_date)
+                                    .toISOString()
+                                    .split("T")[0]
+                                : "N/A"}
+                            </TableCell>
+                            <TableCell>{item?.start_time || "N/A"}</TableCell>
+                            <TableCell>{item?.end_time || "N/A"}</TableCell>
+                            <TableCell>{item?.Location || "N/A"}</TableCell>
+                            <TableCell>{item?.attendance || "N/A"}</TableCell>
+                            <TableCell>{item?.admin_id || "N/A"}</TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={7}
+                            style={{ textAlign: "center", padding: "1rem" }}
+                          >
+                            No data available
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 15, 20]}
+                    component="div"
+                    count={present.length}
+                    rowsPerPage={arrivedRowsPerPage}
+                    page={arrivedPage}
+                    onPageChange={handleArrivedPageChange}
+                    onRowsPerPageChange={handleArrivedRowsPerPageChange}
+                  />
+                </TableContainer>
+              </AccordionDetails>
+            </Accordion>
+          </Grid2>
+        </Grid2>
+      </Grid2>
     </>
   );
 };
