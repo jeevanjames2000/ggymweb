@@ -1,36 +1,41 @@
 import { Grid2 } from "@mui/material";
-import React, { useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import CircularProgress from "@mui/material/CircularProgress";
+import React, { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { MyContext } from "./context/MyContext";
 
 export default function Splash() {
+  const navigate = useNavigate();
+  const { id, setId } = useContext(MyContext);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlId = params.get("id");
+    setId(urlId);
     if (!urlId) {
       window.location.href = "https://login.gitam.edu/Login.aspx";
     } else {
-      Navigate("g-gym");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
     }
-  }, [Navigate]);
+  }, [navigate]);
+
   return (
-    <>
-      <Grid2 container justifyContent="center">
-        <Grid2
-          item
-          xs={12}
-          display="flex"
-          alignItems="center"
-          sx={{ minHeight: "100vh" }}
-        >
-          <Grid2 item style={{ height: "50vh", width: "50vh" }}>
-            <img
-              src="../GYM-splash.png"
-              alt="G-Gym"
-              style={{ height: "100%", width: "100%" }}
-            />
-          </Grid2>
-        </Grid2>
+    <Grid2
+      container
+      justifyContent="center"
+      alignItems="center"
+      sx={{ minHeight: "100vh" }}
+    >
+      <Grid2 item display="flex" flexDirection="column" alignItems="center">
+        <img
+          src="../GYM-splash.png"
+          alt="G-Gym"
+          style={{ height: "50vh", width: "50vh" }}
+        />
+        <CircularProgress style={{ marginTop: "1rem" }} />
       </Grid2>
-    </>
+    </Grid2>
   );
 }

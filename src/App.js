@@ -1,52 +1,51 @@
-import { useEffect, useState } from "react";
-import Gym from "./Gym";
-import { Grid2 } from "@mui/material";
+import { useState } from "react";
+
+import Header from "../src/layout/Header";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Splash from "./Splash";
+import History from "./components/History";
+import { MyContext } from "./context/MyContext";
 
 const App = () => {
-  // const [id, setId] = useState(null);
-  // useEffect(() => {
-  //   const params = new URLSearchParams(window.location.search);
-  //   const urlId = params.get("id");
-  //   setId(urlId);
-  //   if (!urlId) {
-  //     window.location.href = "https://login.gitam.edu/Login.aspx";
-  //   }
-  // }, []);
+  const [contextValue, setContextValue] = useState("GYM");
+  const [id, setId] = useState("");
 
-  // if (!id) {
-  //   return (
-  //     <Grid2
-  //       container
-  //       justifyContent="center"
-  //       alignItems="center"
-  //       sx={{ minHeight: "100vh" }}
-  //     >
-  //       <Grid2
-  //         item
-  //         xs={12}
-  //         sm={8}
-  //         md={6}
-  //         lg={4}
-  //         display="flex"
-  //         justifyContent="center"
-  //         alignItems="center"
-  //       >
-  //         <img
-  //           src="../GYM-splash.png"
-  //           alt="G-Gym"
-  //           style={{ height: "50vh", width: "50vh" }}
-  //         />
-  //       </Grid2>
-  //     </Grid2>
-  //   );
-  // }
-
+  const ProtectedRoute = ({ id, children }) => {
+    const params = new URLSearchParams(window.location.search);
+    const urlId = params.get("id");
+    return id ? children : <Navigate to="/" replace />;
+  };
   return (
-    <Grid2 container>
-      <Grid2 size={{ xs: 12, md: 12, sm: 12, lg: 12 }}>
-        <Gym />
-      </Grid2>
-    </Grid2>
+    <MyContext.Provider value={{ contextValue, setContextValue, id, setId }}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Splash />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute id={id}>
+                <Header />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute id={id}>
+                <History />
+              </ProtectedRoute>
+            }
+          />
+          {/* <Route path="/cancelled" element={ />} /> */}
+        </Routes>
+      </Router>
+    </MyContext.Provider>
   );
 };
+
 export default App;
