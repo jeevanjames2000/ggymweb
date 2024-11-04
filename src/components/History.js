@@ -16,24 +16,20 @@ import {
   TextField,
 } from "@mui/material";
 import Grid2 from "@mui/material/Grid2";
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useContext,
-} from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { MyContext } from "../context/MyContext";
-import moment from "moment";
+import { useSelector, useDispatch } from "react-redux";
+import { stateLocation } from "../store/Slice/locationSlice";
 
 export default function History() {
+  const dispatch = useDispatch();
+  const storeLocation = useSelector((state) => state.location.selectedLocation);
   const [expand, setExpand] = useState({
     cancel: true,
   });
   const [present, setPresent] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState("Slots Time");
-  const [selectedLocation, setSelectedLocation] = useState("GYM");
+  const [selectedLocation, setSelectedLocation] = useState(storeLocation);
   const [slotstime, setSlotsTime] = useState([]);
   const [location, setLocation] = useState([]);
   const [arrivedPage, setArrivedPage] = useState(0);
@@ -62,6 +58,7 @@ export default function History() {
   const handleLocChange = (event) => {
     setSelectedSlot("Slots Time");
     setSelectedLocation(event.target.value);
+    dispatch(stateLocation(event.target.value));
   };
   const fetchGymSchedules = useCallback(
     async (Location, Date, selectedSlot) => {
@@ -116,7 +113,6 @@ export default function History() {
       console.log("Something went wrong", error);
     }
   }, []);
-  const { contextValue, setContextValue } = useContext(MyContext);
   const [selectedDate, setSelectedDate] = useState(null);
 
   const handleDateChange = (event) => {
@@ -149,9 +145,8 @@ export default function History() {
 
   useEffect(() => {
     const currentDate = new Date().toISOString().split("T")[0];
-    setContextValue(selectedLocation);
     setSelectedDate(currentDate);
-  }, [contextValue]);
+  }, []);
 
   return (
     <Grid2 container spacing={2} justifyContent="center" alignItems="center">

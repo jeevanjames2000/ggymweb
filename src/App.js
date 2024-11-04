@@ -9,19 +9,23 @@ import {
 } from "react-router-dom";
 import Splash from "./Splash";
 import History from "./components/History";
-import { MyContext } from "./context/MyContext";
+import { Provider } from "react-redux";
+import store from "./store/store";
 
 const App = () => {
-  const [contextValue, setContextValue] = useState("GYM");
   const [id, setId] = useState("");
 
   const ProtectedRoute = ({ id, children }) => {
     const params = new URLSearchParams(window.location.search);
+    const Sessionparams = localStorage.getItem("userID");
     const urlId = params.get("id");
-    return id ? children : <Navigate to="/" replace />;
+    if (urlId) {
+      localStorage.setItem("userID", urlId);
+    }
+    return params || Sessionparams ? children : <Navigate to="/" replace />;
   };
   return (
-    <MyContext.Provider value={{ contextValue, setContextValue, id, setId }}>
+    <Provider store={store}>
       <Router>
         <Routes>
           <Route path="/" element={<Splash />} />
@@ -41,10 +45,9 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          {/* <Route path="/cancelled" element={ />} /> */}
         </Routes>
       </Router>
-    </MyContext.Provider>
+    </Provider>
   );
 };
 

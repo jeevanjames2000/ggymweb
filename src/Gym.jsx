@@ -22,22 +22,18 @@ import Grid2 from "@mui/material/Grid2";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import moment from "moment";
 
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useContext,
-} from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
-import CryptoJS from "crypto-js";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import { MyContext } from "./context/MyContext";
+import { useSelector, useDispatch } from "react-redux";
+import { stateLocation } from "./store/Slice/locationSlice";
 
 const Gym = () => {
+  const dispatch = useDispatch();
+  const storeLocation = useSelector((state) => state.location.selectedLocation);
+
   const [selectedSlot, setSelectedSlot] = useState("Slots Time");
-  const [selectedLocation, setSelectedLocation] = useState("GYM");
+  const [selectedLocation, setSelectedLocation] = useState(storeLocation);
   const [access, setAccess] = useState(false);
   const [accessmsg, setAccessMsg] = useState([]);
   const [wait, setWait] = useState([]);
@@ -57,28 +53,7 @@ const Gym = () => {
     arrived: false,
     cancel: false,
   });
-  const [Regdno, setRegdNo] = useState(null);
-  const decryptTripleDES = (cipherText, key, useHashing = false) => {
-    let keyHex;
-    if (useHashing) {
-      keyHex = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(key));
-    } else {
-      keyHex = CryptoJS.enc.Utf8.parse(key);
-    }
-    const decrypted = CryptoJS.TripleDES.decrypt(
-      {
-        ciphertext: CryptoJS.enc.Base64.parse(cipherText.replace(" ", "+")),
-      },
-      keyHex,
-      {
-        mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7,
-      }
-    );
-    const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
-    setRegdNo(decryptedText);
-    return decryptedText;
-  };
+
   const [waitingPage, setWaitingPage] = useState(0);
   const [waitingRowsPerPage, setWaitingRowsPerPage] = useState(10);
   const [arrivedPage, setArrivedPage] = useState(0);
@@ -110,16 +85,16 @@ const Gym = () => {
     setExpand((prev) => ({ ...prev, [panel]: !prev[panel] }));
   };
   const inputRef = useRef(null);
-  const { contextValue, setContextValue } = useContext(MyContext);
 
   const handleSlotChange = (event) => {
     setSelectedSlot(event.target.value);
   };
   const handleLocChange = (event) => {
-    setSelectedSlot("Slots Time");
-    setSelectedLocation(event.target.value);
-    setContextValue(event.target.value);
+    const newLocation = event.target.value;
+    dispatch(stateLocation(newLocation));
+    setSelectedLocation(newLocation);
   };
+
   const fetchGymSchedules = useCallback(
     async (Location, Date, selectedSlot) => {
       try {
@@ -183,6 +158,8 @@ const Gym = () => {
       setScannedResult(false);
     }, 2000);
     try {
+      const regdNo = localStorage.getItem("RegdNo");
+      console.log("regdNo: ", regdNo);
       const response = await fetch(
         "https://sports1.gitam.edu/api/gym/updateGymSchedule",
         {
@@ -196,7 +173,7 @@ const Gym = () => {
             start_date: dataToPost.start_date,
             id: dataToPost.id,
             masterID: dataToPost.masterID,
-            admin_id: Regdno,
+            admin_id: regdNo,
           }),
         }
       );
@@ -239,22 +216,12 @@ const Gym = () => {
       fetchGymSchedules(selectedLocation, selectedDate, selectedSlot);
       fetchGymSlotsTimes(selectedLocation, selectedDate);
     }
-  }, [
-    selectedDate,
-    selectedSlot,
-    selectedLocation,
-    fetchGymSchedules,
-    fetchGymSlotsTimes,
-  ]);
+  }, [selectedLocation, selectedDate, selectedSlot]);
+
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
-    if (id) {
-      const decryptedId = decryptTripleDES(id, "Mallikarjun", true);
-    }
     const currentDate = new Date().toISOString().split("T")[0];
     setSelectedDate(currentDate);
-  }, [contextValue]);
+  }, []);
   const delayTimeoutRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {

@@ -24,17 +24,20 @@ import React, {
   useContext,
 } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { MyContext } from "../context/MyContext";
-import moment from "moment";
+import { useSelector, useDispatch } from "react-redux";
+import { stateLocation } from "../store/Slice/locationSlice";
 
 export default function Cancelled() {
+  const dispatch = useDispatch();
+  const storeLocation = useSelector((state) => state.location.selectedLocation);
+
   const [expand, setExpand] = useState({
     cancel: true,
   });
   const [present, setPresent] = useState([]);
   console.log("present: ", present);
   const [selectedSlot, setSelectedSlot] = useState("Slots Time");
-  const [selectedLocation, setSelectedLocation] = useState("GYM");
+  const [selectedLocation, setSelectedLocation] = useState(storeLocation);
   console.log("selectedLocation: ", selectedLocation);
   const [slotstime, setSlotsTime] = useState([]);
   const [location, setLocation] = useState([]);
@@ -64,6 +67,7 @@ export default function Cancelled() {
   const handleLocChange = (event) => {
     setSelectedSlot("Slots Time");
     setSelectedLocation(event.target.value);
+    dispatch(stateLocation(event.target.value));
   };
   const fetchGymSchedules = useCallback(
     async (Location, Date, selectedSlot) => {
@@ -118,7 +122,7 @@ export default function Cancelled() {
       console.log("Something went wrong", error);
     }
   }, []);
-  const { contextValue, setContextValue } = useContext(MyContext);
+
   const [selectedDate, setSelectedDate] = useState(null);
 
   const handleDateChange = (event) => {
@@ -152,9 +156,8 @@ export default function Cancelled() {
 
   useEffect(() => {
     const currentDate = new Date().toISOString().split("T")[0];
-    setContextValue(selectedLocation);
     setSelectedDate(currentDate);
-  }, [contextValue]);
+  }, []);
 
   return (
     <Grid2 container spacing={2} justifyContent="center" alignItems="center">

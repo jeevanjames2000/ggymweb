@@ -9,13 +9,13 @@ import Gym from "../../Gym";
 import Arrived from "../../components/Arrived";
 import Cancelled from "../../components/Cancelled";
 import History from "../../components/History";
-import { MyContext } from "../../context/MyContext";
 import "./header.css";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { useSelector, useDispatch } from "react-redux";
+import { stateLocation } from "../../store/Slice/locationSlice";
 
 export default function Index() {
-  const { contextValue, setContextValue } = useContext(MyContext);
-
+  const storeLocation = useSelector((state) => state.location.selectedLocation);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedComponent, setSelectedComponent] = useState("Gym");
 
@@ -36,6 +36,13 @@ export default function Index() {
       default:
         return <Gym />;
     }
+  };
+
+  const handleLogout = () => {
+    console.log("logged out");
+    window.location.href = "https://login.gitam.edu/Login.aspx";
+    localStorage.removeItem("userID");
+    localStorage.removeItem("RegdNo");
   };
 
   return (
@@ -77,7 +84,7 @@ export default function Index() {
             fontSize={23}
             sx={{ fontWeight: "bold", color: "#fff" }}
           >
-            {contextValue}
+            {storeLocation}
           </Typography>
         </Grid2>
         <Grid2
@@ -99,6 +106,7 @@ export default function Index() {
             <LogoutIcon
               fontSize="medium"
               sx={{ color: "#fff", cursor: "pointer" }}
+              onClick={handleLogout}
             />
           </Grid2>
         </Grid2>
@@ -109,7 +117,7 @@ export default function Index() {
         <Grid2 item size={{ xs: isSidebarOpen ? 1 : 0.5 }}>
           <Box
             sx={{
-              width: isSidebarOpen ? "150px" : "50px",
+              width: isSidebarOpen ? "150px" : "60px",
               overflow: "hidden",
               transition: "width 0.3s ease",
               backgroundColor: "#f4f4f4",
