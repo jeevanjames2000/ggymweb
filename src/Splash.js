@@ -32,7 +32,7 @@ export default function Splash() {
   useEffect(() => {
     const sessionRegdNo = localStorage.getItem("RegdNo");
 
-    if (sessionRegdNo) {
+    if (!sessionRegdNo) {
       window.location.href = "https://login.gitam.edu/Login.aspx";
       console.log("Please log in");
     } else {

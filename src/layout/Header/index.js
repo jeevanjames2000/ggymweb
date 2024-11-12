@@ -68,7 +68,7 @@ export default function Index() {
   const sessionRegdNo = localStorage.getItem("userID");
 
   useEffect(() => {
-    if (sessionRegdNo) {
+    if (!sessionRegdNo) {
       setTimeout(() => {
         window.location.href = "https://login.gitam.edu/Login.aspx";
       }, 1000);
