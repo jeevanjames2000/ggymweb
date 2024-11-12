@@ -30,16 +30,18 @@ export default function Splash() {
   };
 
   useEffect(() => {
-    const Sessionparams = localStorage.getItem("userID");
-    if (!Sessionparams) {
-      // window.location.href = "https://login.gitam.edu/Login.aspx";
-      console.log("please login");
-      // const decryptedId = decryptTripleDES(Sessionparams, "Mallikarjun", true);
-      // localStorage.setItem("RegdNo", decryptedId);
+    const sessionRegdNo = localStorage.getItem("RegdNo");
+
+    if (sessionRegdNo) {
+      window.location.href = "https://login.gitam.edu/Login.aspx";
+      console.log("Please log in");
+    } else {
+      const decryptedId = decryptTripleDES(sessionRegdNo, "Mallikarjun", true);
+      setRegdNo(decryptedId);
+      localStorage.setItem("userID", decryptedId);
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
-    } else {
     }
   }, [navigate]);
 

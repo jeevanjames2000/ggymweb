@@ -12,14 +12,10 @@ import {
   TablePagination,
 } from "@mui/material";
 import Grid2 from "@mui/material/Grid2";
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import CryptoJS from "crypto-js";
+import React, { useState, useEffect, useCallback } from "react";
+import "../index.css";
 
 export default function Arrived() {
-  const [expand, setExpand] = useState({
-    waiting: true,
-    arrived: false,
-  });
   const [present, setPresent] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState("Slots Time");
   const [selectedLocation, setSelectedLocation] = useState("GYM");
@@ -27,8 +23,6 @@ export default function Arrived() {
   const [location, setLocation] = useState([]);
   const [arrivedPage, setArrivedPage] = useState(0);
   const [arrivedRowsPerPage, setArrivedRowsPerPage] = useState(10);
-  const [arrived, setArrived] = useState(0);
-  const [Regdno, setRegdNo] = useState(null);
 
   const paginatedArrivedData = present.slice(
     arrivedPage * arrivedRowsPerPage,
@@ -100,38 +94,11 @@ export default function Arrived() {
     }
   }, []);
 
-  const decryptTripleDES = (cipherText, key, useHashing = false) => {
-    let keyHex;
-    if (useHashing) {
-      keyHex = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(key));
-    } else {
-      keyHex = CryptoJS.enc.Utf8.parse(key);
-    }
-    const decrypted = CryptoJS.TripleDES.decrypt(
-      {
-        ciphertext: CryptoJS.enc.Base64.parse(cipherText.replace(" ", "+")),
-      },
-      keyHex,
-      {
-        mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7,
-      }
-    );
-    const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
-    setRegdNo(decryptedText);
-    return decryptedText;
-  };
-
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
-    if (id) {
-      const decryptedId = decryptTripleDES(id, "Mallikarjun", true);
-    }
     const currentDate = new Date().toISOString().split("T")[0];
     fetchGymSchedules(selectedLocation, currentDate, selectedSlot);
     fetchGymSlotsTimes(selectedLocation, currentDate, selectedSlot);
-  }, [selectedSlot, selectedLocation, fetchGymSchedules]);
+  }, [selectedSlot, selectedLocation, fetchGymSchedules, fetchGymSlotsTimes]);
 
   return (
     <Grid2 container spacing={2} justifyContent="center" alignItems="center">
@@ -169,21 +136,27 @@ export default function Arrived() {
                 value={selectedLocation}
                 onChange={handleLocChange}
                 displayEmpty
-                style={{
+                sx={{
                   width: "9rem",
                   height: "2.5rem",
-                  backgroundColor: "#00695c",
-                  color: "white",
+                  backgroundColor: "#007367",
+                  color: "#fff",
+                  border: "1px solid #007367",
                 }}
               >
                 {location?.map((loc) => (
                   <MenuItem
                     key={loc}
                     value={loc}
-                    style={{
+                    sx={{
                       height: "1.5rem",
                       justifyContent: "left",
                       width: "9rem",
+                      "&.Mui-selected": {
+                        backgroundColor: "rgb(0, 115, 103) !important",
+                        color: "#fff !important",
+                        height: "2rem !important",
+                      },
                     }}
                   >
                     {loc}
@@ -196,7 +169,7 @@ export default function Arrived() {
                 value={selectedSlot}
                 onChange={handleSlotChange}
                 displayEmpty
-                style={{
+                sx={{
                   width: "9rem",
                   height: "2.5rem",
                   backgroundColor: "#00695c",
@@ -207,10 +180,15 @@ export default function Arrived() {
                   <MenuItem
                     key={index}
                     value={time}
-                    style={{
+                    sx={{
                       height: "1.5rem",
                       justifyContent: "left",
                       width: "9rem",
+                      "&.Mui-selected": {
+                        backgroundColor: "rgb(0, 115, 103) !important",
+                        color: "#fff !important",
+                        height: "2rem !important",
+                      },
                     }}
                   >
                     {time}
@@ -224,7 +202,7 @@ export default function Arrived() {
         <Grid2 size={{ xs: 12 }}>
           <TableContainer
             component={Paper}
-            style={{
+            sx={{
               //   border: "1px solid #B20016",
               marginTop: "0.5rem",
               backgroundColor: "#fff",
@@ -245,7 +223,7 @@ export default function Arrived() {
                   ].map((heading) => (
                     <TableCell
                       key={heading}
-                      style={{
+                      sx={{
                         borderBottom: "1px solid #B20016",
                         // fontWeight: "bold",
                         color: "black",

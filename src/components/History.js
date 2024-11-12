@@ -9,24 +9,18 @@ import {
   TableRow,
   TableContainer,
   Paper,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   TablePagination,
   TextField,
+  CircularProgress,
 } from "@mui/material";
 import Grid2 from "@mui/material/Grid2";
 import React, { useState, useEffect, useCallback } from "react";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useSelector, useDispatch } from "react-redux";
 import { stateLocation } from "../store/Slice/locationSlice";
-
+import { useNavigate } from "react-router-dom";
 export default function History() {
   const dispatch = useDispatch();
   const storeLocation = useSelector((state) => state.location.selectedLocation);
-  const [expand, setExpand] = useState({
-    cancel: true,
-  });
   const [present, setPresent] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState("Slots Time");
   const [selectedLocation, setSelectedLocation] = useState(storeLocation);
@@ -34,19 +28,13 @@ export default function History() {
   const [location, setLocation] = useState([]);
   const [arrivedPage, setArrivedPage] = useState(0);
   const [arrivedRowsPerPage, setArrivedRowsPerPage] = useState(10);
-  const [arrived, setArrived] = useState(0);
-  const [Regdno, setRegdNo] = useState(null);
-
+  const [loading, setLoading] = useState(true);
   const paginatedArrivedData = present.slice(
     arrivedPage * arrivedRowsPerPage,
     arrivedPage * arrivedRowsPerPage + arrivedRowsPerPage
   );
   const handleArrivedPageChange = (event, newPage) => {
     setArrivedPage(newPage);
-  };
-
-  const handleAccordionChange = (panel) => {
-    setExpand((prev) => ({ ...prev, [panel]: !prev[panel] }));
   };
   const handleArrivedRowsPerPageChange = (event) => {
     setArrivedRowsPerPage(parseInt(event.target.value, 10));
@@ -64,7 +52,7 @@ export default function History() {
     async (Location, Date, selectedSlot) => {
       try {
         const response = await fetch(
-          `http://localhost:2021/api/gym/getHistory/${Date}/${Location}/${selectedSlot}`,
+          `https://sports1.gitam.edu/api/gym/getHistory/${Date}/${Location}/${selectedSlot}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -114,22 +102,9 @@ export default function History() {
     }
   }, []);
   const [selectedDate, setSelectedDate] = useState(null);
-
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
   };
-
-  //   const generateUpcomingDates = () => {
-  //     const dates = [];
-  //     for (let i = -3; i < 7; i++) {
-  //       const date = moment().add(i, "days").format("YYYY-MM-DD");
-  //       dates.push(date);
-  //     }
-  //     setUpcomingDates(dates);
-  //   };
-
-  //   const [upcomingDates, setUpcomingDates] = useState([]);
-
   useEffect(() => {
     if (selectedDate && selectedLocation) {
       fetchGymSchedules(selectedLocation, selectedDate, selectedSlot);
@@ -142,12 +117,40 @@ export default function History() {
     fetchGymSchedules,
     fetchGymSlotsTimes,
   ]);
-
   useEffect(() => {
     const currentDate = new Date().toISOString().split("T")[0];
     setSelectedDate(currentDate);
   }, []);
-
+  const navigate = useNavigate();
+  const sessionRegdNo = localStorage.getItem("RegdNo");
+  useEffect(() => {
+    if (!sessionRegdNo) {
+      setTimeout(() => {
+        window.location.href = "https://login.gitam.edu/Login.aspx";
+      }, 1000);
+    } else {
+      setLoading(false);
+    }
+  }, [navigate, sessionRegdNo]);
+  if (loading) {
+    return (
+      <Grid2
+        container
+        justifyContent="center"
+        alignItems="center"
+        sx={{ minHeight: "100vh" }}
+      >
+        <Grid2 item display="flex" flexDirection="column" alignItems="center">
+          <img
+            src="../GYM-splash.png"
+            alt="G-Gym"
+            style={{ height: "50vh", width: "50vh" }}
+          />
+          <CircularProgress style={{ marginTop: "1rem" }} />
+        </Grid2>
+      </Grid2>
+    );
+  }
   return (
     <Grid2 container spacing={2} justifyContent="center" alignItems="center">
       <Grid2
@@ -161,7 +164,6 @@ export default function History() {
           alignItems="center"
           size={{ xs: 12, sm: 12, md: 12 }}
           style={{
-            borderBottom: "2px solid #000",
             paddingBottom: "0.5rem",
           }}
         >
@@ -186,32 +188,32 @@ export default function History() {
                 value={selectedDate}
                 onChange={handleDateChange}
                 InputProps={{
-                  style: {
+                  sx: {
                     width: "9rem",
                     height: "2.6rem",
-                    color: "#000",
-                    border: "1px solid #ddd",
+                    color: "#fff",
                     padding: "0.4rem",
+                    backgroundColor: "#007367",
+                    border: "1px solid #007367",
                   },
                 }}
                 inputProps={{
-                  style: {
+                  sx: {
                     height: "2.5rem",
                     padding: "0 0.5rem",
                     boxSizing: "border-box",
                   },
                 }}
                 sx={{
-                  //   backgroundColor: "#fff",
                   "& .MuiOutlinedInput-root": {
                     "& fieldset": {
-                      borderColor: "#000",
+                      borderColor: "#007367",
                     },
                     "&:hover fieldset": {
-                      borderColor: "#000",
+                      borderColor: "#007367",
                     },
                     "&.Mui-focused fieldset": {
-                      borderColor: "#000",
+                      borderColor: "#007367",
                     },
                   },
                 }}
@@ -225,18 +227,24 @@ export default function History() {
                 style={{
                   width: "8rem",
                   height: "2.5rem",
-                  color: "#000",
-                  border: "1px solid #000",
+                  color: "#fff",
+                  backgroundColor: "#007367",
+                  border: "1px solid #007367",
                 }}
               >
                 {location?.map((loc) => (
                   <MenuItem
                     key={loc}
                     value={loc}
-                    style={{
+                    sx={{
                       height: "1.5rem",
                       justifyContent: "left",
                       width: "9rem",
+                      "&.Mui-selected": {
+                        backgroundColor: "rgb(0, 115, 103) !important",
+                        color: "#fff !important",
+                        height: "2rem !important",
+                      },
                     }}
                   >
                     {loc}
@@ -252,18 +260,24 @@ export default function History() {
                 style={{
                   width: "8rem",
                   height: "2.5rem",
-                  color: "#000",
-                  border: "1px solid #000",
+                  backgroundColor: "#007367",
+                  color: "#fff",
+                  border: "1px solid #007367",
                 }}
               >
                 {slotstime?.map((time, index) => (
                   <MenuItem
                     key={index}
                     value={time}
-                    style={{
+                    sx={{
                       height: "1.5rem",
                       justifyContent: "left",
                       width: "9rem",
+                      "&.Mui-selected": {
+                        backgroundColor: "rgb(0, 115, 103) !important",
+                        color: "#fff !important",
+                        height: "2rem !important",
+                      },
                     }}
                   >
                     {time}
@@ -273,102 +287,159 @@ export default function History() {
             </Grid2>
           </Grid2>
         </Grid2>
-
-        <Grid2 size={{ xs: 12 }}>
-          <Accordion
-            expanded={expand.cancel}
-            onChange={() => handleAccordionChange("cancel")}
+        <Grid2
+          size={{ xs: 12 }}
+          style={{
+            marginBottom: "35px",
+            border: "1px solid #e8e2e2",
+            borderTop: "2px solid #007367",
+            padding: "20px",
+            background: "#fff",
+            boxShadow:
+              "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+          }}
+        >
+          <Typography fontSize={20} style={{ color: "#00695c" }}>
+            History
+          </Typography>
+          <TableContainer
+            component={Paper}
+            style={{
+              border: "1px solid #ccc",
+              backgroundColor: "#fff",
+            }}
           >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id="panel1a-header"
-            >
-              <Typography fontSize={20} style={{ color: "#00695c" }}>
-                History
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <TableContainer
-                component={Paper}
-                style={{
-                  border: "1px solid #000",
-                  marginTop: "0.5rem",
-                  backgroundColor: "#fff",
-                }}
-              >
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      {[
-                        "Sno",
-                        "Regd Number",
-                        "Start Date",
-                        "Start Time",
-                        "End Time",
-                        "Location",
-                        "Status",
-                        "Attendance",
-                      ].map((heading) => (
-                        <TableCell
-                          key={heading}
-                          style={{
-                            borderBottom: "1px solid #000",
-                            // fontWeight: "bold",
-                            color: "black",
-                          }}
-                        >
-                          {heading}
-                        </TableCell>
-                      ))}
+            <Table>
+              <TableHead>
+                <TableRow>
+                  {[
+                    "#",
+                    "Regd. number",
+                    "Start date",
+                    "Start time",
+                    "End time",
+                    "Location",
+                    "Status",
+                    "Attendance",
+                  ].map((heading) => (
+                    <TableCell
+                      key={heading}
+                      style={{
+                        borderBottom: "1px solid #ccc",
+                        borderRight: "1px solid #ccc",
+                        fontWeight: "bold",
+                        color: "black",
+                      }}
+                    >
+                      {heading}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedArrivedData.length > 0 ? (
+                  paginatedArrivedData.map((item, id) => (
+                    <TableRow key={id}>
+                      <TableCell
+                        style={{
+                          fontSize: 13,
+                          borderBottom: "1px solid #ccc",
+                          borderRight: "1px solid #ccc",
+                        }}
+                      >
+                        {id + 1 + arrivedPage * arrivedRowsPerPage}
+                      </TableCell>
+                      <TableCell
+                        style={{
+                          fontSize: 13,
+                          borderBottom: "1px solid #ccc",
+                          borderRight: "1px solid #ccc",
+                        }}
+                      >
+                        {item?.regdNo || "N/A"}
+                      </TableCell>
+                      <TableCell
+                        style={{
+                          fontSize: 13,
+                          borderBottom: "1px solid #ccc",
+                          borderRight: "1px solid #ccc",
+                        }}
+                      >
+                        {item?.start_date
+                          ? new Date(item.start_date)
+                              .toISOString()
+                              .split("T")[0]
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell
+                        style={{
+                          fontSize: 13,
+                          borderBottom: "1px solid #ccc",
+                          borderRight: "1px solid #ccc",
+                        }}
+                      >
+                        {item?.start_time || "N/A"}
+                      </TableCell>
+                      <TableCell
+                        style={{
+                          fontSize: 13,
+                          borderBottom: "1px solid #ccc",
+                          borderRight: "1px solid #ccc",
+                        }}
+                      >
+                        {item?.end_time || "N/A"}
+                      </TableCell>
+                      <TableCell
+                        style={{
+                          fontSize: 13,
+                          borderBottom: "1px solid #ccc",
+                          borderRight: "1px solid #ccc",
+                        }}
+                      >
+                        {item?.Location || "N/A"}
+                      </TableCell>
+                      <TableCell
+                        style={{
+                          fontSize: 13,
+                          borderBottom: "1px solid #ccc",
+                          borderRight: "1px solid #ccc",
+                        }}
+                      >
+                        {item?.status || "N/A"}
+                      </TableCell>
+                      <TableCell
+                        style={{
+                          fontSize: 13,
+                          borderBottom: "1px solid #ccc",
+                          borderRight: "1px solid #ccc",
+                        }}
+                      >
+                        {item?.attendance || "N/A"}
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {paginatedArrivedData.length > 0 ? (
-                      paginatedArrivedData.map((item, id) => (
-                        <TableRow key={id}>
-                          <TableCell>
-                            {id + 1 + arrivedPage * arrivedRowsPerPage}
-                          </TableCell>
-                          <TableCell>{item?.regdNo || "N/A"}</TableCell>
-                          <TableCell>
-                            {item?.start_date
-                              ? new Date(item.start_date)
-                                  .toISOString()
-                                  .split("T")[0]
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell>{item?.start_time || "N/A"}</TableCell>
-                          <TableCell>{item?.end_time || "N/A"}</TableCell>
-                          <TableCell>{item?.Location || "N/A"}</TableCell>
-                          <TableCell>{item?.status || "N/A"}</TableCell>
-                          <TableCell>{item?.attendance || "N/A"}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell
-                          colSpan={7}
-                          style={{ textAlign: "center", padding: "1rem" }}
-                        >
-                          No data available
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 15, 20]}
-                  component="div"
-                  count={present.length}
-                  rowsPerPage={arrivedRowsPerPage}
-                  page={arrivedPage}
-                  onPageChange={handleArrivedPageChange}
-                  onRowsPerPageChange={handleArrivedRowsPerPageChange}
-                />
-              </TableContainer>
-            </AccordionDetails>
-          </Accordion>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      style={{ textAlign: "center", padding: "1rem" }}
+                    >
+                      No data available
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 15, 20]}
+              component="div"
+              count={present.length}
+              rowsPerPage={arrivedRowsPerPage}
+              page={arrivedPage}
+              onPageChange={handleArrivedPageChange}
+              onRowsPerPageChange={handleArrivedRowsPerPageChange}
+            />
+          </TableContainer>
         </Grid2>
       </Grid2>
     </Grid2>

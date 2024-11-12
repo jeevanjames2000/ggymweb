@@ -1,5 +1,11 @@
-import React, { useState, useContext } from "react";
-import { Box, Grid2, Typography } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Grid2,
+  Typography,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HistoryIcon from "@mui/icons-material/History";
@@ -11,18 +17,32 @@ import Cancelled from "../../components/Cancelled";
 import History from "../../components/History";
 import "./header.css";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { useSelector, useDispatch } from "react-redux";
-import { stateLocation } from "../../store/Slice/locationSlice";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import "../../index.css";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 
 export default function Index() {
+  const navigate = useNavigate();
   const storeLocation = useSelector((state) => state.location.selectedLocation);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedComponent, setSelectedComponent] = useState("Gym");
+  const [loading, setLoading] = useState(true);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
   };
 
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleOpenMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
   const renderComponent = () => {
     switch (selectedComponent) {
       case "G-Gym":
@@ -44,6 +64,38 @@ export default function Index() {
     localStorage.removeItem("userID");
     localStorage.removeItem("RegdNo");
   };
+
+  const sessionRegdNo = localStorage.getItem("userID");
+
+  useEffect(() => {
+    if (sessionRegdNo) {
+      setTimeout(() => {
+        window.location.href = "https://login.gitam.edu/Login.aspx";
+      }, 1000);
+    } else {
+      setLoading(false);
+    }
+  }, [navigate, sessionRegdNo]);
+
+  if (loading) {
+    return (
+      <Grid2
+        container
+        justifyContent="center"
+        alignItems="center"
+        sx={{ minHeight: "100vh" }}
+      >
+        <Grid2 item display="flex" flexDirection="column" alignItems="center">
+          <img
+            src="../GYM-splash.png"
+            alt="G-Gym"
+            style={{ height: "50vh", width: "50vh" }}
+          />
+          <CircularProgress style={{ marginTop: "1rem" }} />
+        </Grid2>
+      </Grid2>
+    );
+  }
 
   return (
     <Grid2 container>
@@ -71,22 +123,23 @@ export default function Index() {
               onClick={toggleSidebar}
             />
           </Grid2>
-        </Grid2>
-        <Grid2
-          container
-          size={{ xs: 4 }}
-          justifyContent={"center"}
-          alignItems="center"
-          gap={2}
-        >
-          <Typography
-            variant="h6"
-            fontSize={23}
-            sx={{ fontWeight: "bold", color: "#fff" }}
+          <Grid2
+            container
+            size={{ xs: 4 }}
+            justifyContent={"left"}
+            alignItems="left"
+            gap={2}
           >
-            {storeLocation}
-          </Typography>
+            <Typography
+              variant="h6"
+              fontSize={23}
+              sx={{ fontWeight: "bold", color: "#fff" }}
+            >
+              {storeLocation}
+            </Typography>
+          </Grid2>
         </Grid2>
+
         <Grid2
           item
           container
@@ -98,19 +151,34 @@ export default function Index() {
         >
           <Grid2 item>
             <AccountCircleIcon
-              fontSize="medium"
+              fontSize="large"
               sx={{ color: "#fff", cursor: "pointer" }}
-            />
-          </Grid2>
-          <Grid2 item>
-            <LogoutIcon
-              fontSize="medium"
-              sx={{ color: "#fff", cursor: "pointer" }}
-              onClick={handleLogout}
+              onClick={handleOpenMenu}
             />
           </Grid2>
         </Grid2>
       </Grid2>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseMenu}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        <MenuItem>
+          <Typography>{sessionRegdNo}</Typography>
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <Typography color="error">Logout</Typography>
+        </MenuItem>
+      </Menu>
 
       <Grid2 container size={{ xs: 12 }}>
         {/* Sidebar */}
@@ -120,7 +188,7 @@ export default function Index() {
               width: isSidebarOpen ? "150px" : "60px",
               overflow: "hidden",
               transition: "width 0.3s ease",
-              backgroundColor: "#f4f4f4",
+              backgroundColor: "#fff",
               height: "100vh",
               padding: "1rem",
               boxSizing: "border-box",
@@ -185,6 +253,25 @@ export default function Index() {
               {isSidebarOpen && (
                 <Typography variant="body2" sx={{ ml: 1 }}>
                   Cancelled
+                </Typography>
+              )}
+            </Box>
+            <Box
+              display="flex"
+              alignItems="center"
+              sx={{
+                cursor: "pointer",
+                mt: 1,
+                color: selectedComponent === "Logout" ? "#007367" : "inherit",
+                borderRadius: "4px",
+                padding: "8px",
+              }}
+              onClick={handleLogout}
+            >
+              <LogoutIcon fontSize="small" />
+              {isSidebarOpen && (
+                <Typography variant="body2" sx={{ ml: 1 }}>
+                  Logout
                 </Typography>
               )}
             </Box>
