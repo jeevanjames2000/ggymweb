@@ -304,7 +304,7 @@ export default function Cancelled() {
           }}
         >
           <Typography fontSize={20} style={{ color: "#00695c" }}>
-            Cancelled
+            Canceled
           </Typography>
 
           <TableContainer

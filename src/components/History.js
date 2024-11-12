@@ -307,6 +307,7 @@ export default function History() {
             style={{
               border: "1px solid #ccc",
               backgroundColor: "#fff",
+              marginTop: "0.5rem",
             }}
           >
             <Table>

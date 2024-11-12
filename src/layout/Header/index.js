@@ -175,9 +175,6 @@ export default function Index() {
         <MenuItem>
           <Typography>{sessionRegdNo}</Typography>
         </MenuItem>
-        <MenuItem onClick={handleLogout}>
-          <Typography color="error">Logout</Typography>
-        </MenuItem>
       </Menu>
 
       <Grid2 container size={{ xs: 12 }}>
@@ -252,7 +249,7 @@ export default function Index() {
               <CancelOutlinedIcon fontSize="small" />
               {isSidebarOpen && (
                 <Typography variant="body2" sx={{ ml: 1 }}>
-                  Cancelled
+                  Canceled
                 </Typography>
               )}
             </Box>
